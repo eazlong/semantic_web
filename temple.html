@@ -1,0 +1,190 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>训练</title>
+    <script src="js/jquery-1.8.2.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="css/index.css">
+    <script type="text/javascript">
+        var nowIndex = 0;
+        $(function () {
+            $.ajax({
+                type: "get",
+                url: window.localStorage.host+"query",
+                contentType:"application/json; charset=utf-8",
+                data: {
+                        appid:window.localStorage.appid
+                    },
+                dataType: "json",
+                success: function (message) {
+                    $('#category option').remove()
+                    $('#list ul').remove()
+                    $.each( message, function(k,v){
+                        $('#category').append('<option>'+k+'</option>')
+                        $('#list').append('<ul id='+k+'>'+k+'</ul>')
+                        $.each(v, function(val,val2){
+                            $("#"+k).append('<li value='+ k + '><i class="i1"></i><i class="i2"></i><span>'+ val2 +'</span></li>');    
+                            bindClick();
+                        })
+                    })
+                },
+                error: function (message) {
+                   alert("提交数据失败！");
+                }
+            });
+
+            bindClick();
+            $("#add").click(function(){
+                var category = $("#category").val()
+                var content = $('#txt').val()
+                if (content==undefined || content==null || content == '') {
+                    alert( "content can't be null!" )
+                }
+                $("#"+category).append('<li><i class="i1"></i><i class="i2"></i><span>'+ content +'</span></li>');
+                $('#txt').val('');
+                bindClick();
+            });
+            $(".dv-box .dv-item").click(function () {
+                $(".list-box ul li").eq(nowIndex).remove();
+                $(".dv-box").hide();
+                bindClick();
+            })
+            var List = document.getElementById('list');
+            var oSpan = List.getElementsByTagName('span');
+            $(".dv-box .dv-edit").click(function(){
+                var newHtml = oSpan[nowIndex].innerHTML;
+                if(newHtml.indexOf('<') == -1){
+                    oSpan[nowIndex].innerHTML = '<input id="new'+ nowIndex +'" type="text" value="'+ newHtml +'"><button id="'+ nowIndex +'">确定</button>';
+                }
+                $(".dv-box").hide();
+            })
+            $('.list-box ul li button').live('click',function(){
+                var  Id = $(this).attr('id');
+                var newVa = $('#new' + Id).val();
+                oSpan[Id].innerHTML = newVa;
+            });
+             $('#create').click(function() {
+                var s = $('#new_category').val()
+                $('#category').append('<option>'+s+'</option>')
+                 $('#list').append('<ul id='+s+'>'+s+'</ul>')
+            })
+            $('#try').click(function() {
+                var s = $('#predict_test').val();
+             //    $.post("http://192.168.27.130:8001/predict",
+             //    {
+             //        appid:"test9",
+             //        sentense:s
+             //    },
+             //    function(data, result){
+             //    alert("data:"+data);
+             // });
+               $.ajax({
+                    type: "post",
+                    url: window.localStorage.host+"predict",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({
+                            appid:window.localStorage.appid,
+                            sentence:s
+                        }),
+                    dataType: "json",
+                    success: function (message) {
+                        $("#output").val(JSON.stringify(message))
+                        //var data=JSON.parse(message);
+                    },
+                    error: function (message) {
+                       alert("提交数据失败！");
+                    }
+                });
+            });
+
+            $('#train').click(function() {
+                 var data={}
+                 $(function (){
+                    $("#list").find("ul").each(function () {
+                        var category = $(this).attr("id")
+                        var content = []
+                        $(this).find("li").each(function(){
+                            content.push($(this).text().replace(/[\r\n]/g,""))
+                        });
+                        data[category]=content
+                    });        
+                });
+                $.ajax({
+                    type: "post",
+                    url: window.localStorage.host+"train",
+                    contentType:"application/json; charset=utf-8",
+                    data: JSON.stringify({
+                            appid:window.localStorage.appid,
+                            data:data
+                        }),
+                    dataType: "json",
+                    success: function (message) {
+                    },
+                    error: function (message) {
+                       alert("提交数据失败！");
+                    }
+                });
+            });
+        })
+        function bindClick(){
+            $(".list-box ul li .i2").each(function (index, item) {
+                var top=$(this).offset().top-30;
+                $(this).click(function(){
+                    nowIndex = index;
+                    $(".dv-box").css("display", "block").css("top", top);
+                })
+            })
+        }
+    </script>
+</head>
+<body>
+    <div class="list-box">
+        <div >
+            <p>类别</p>
+            <input type="text" id='new_category'>
+            <button id='create'>创建</button>
+        </div>
+        <div class="add">
+            <input type="text" value="" id="txt">
+            <select id='category'>
+            </select>
+            <a id="add" href="#">
+                <img src="images/bt.png">
+            </a>
+        </div>
+        <div class="list">
+            <ul id="list">
+            </ul>
+        </div>
+        <div align="right">
+            <button id="train">train</button>
+        </div>
+        <div class="add">
+            <input type="text" value="" id="predict_test">
+        </div>
+        <div align="right">
+            <button align='right' id="try">have a try</button>
+        </div>
+        <div>
+            <textarea rows="10" cols="100" id='output'>
+            </textarea>
+        </div>
+        <div class="dv-box">
+            <span>
+                <img class="icon" src="images/icon3_03.png">
+            </span>
+            <div class="sid">
+                <div class="dv-edit">
+                    <img id="click" src="images/bianji.png">
+                    编辑
+                </div>
+                <div class="dv-item">
+                    <img id="delete" src="images/detle.png">
+                    删除
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

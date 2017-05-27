@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>登录</title>
+    <script src="js/jquery-1.8.2.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="css/index.css">
+    <script type="text/javascript">
+    	$(function() {
+    		window.localStorage.host = "http://192.168.27.130:8001/"
+    		$("#login").click(function(){
+    			$.post(window.localStorage.host+"login",
+    			{
+    				'name':$('#name').val(),
+    				'password':$('#password').val()
+    			},
+    			function(data, result){
+    				console.log(data)
+    				if ( result == 'success' ) {
+    					window.localStorage.appid = data['appid']
+    					window.location.href="temple.html";	
+    				}
+    			});
+    		})
+    	})
+    </script>
+</head>
+<body>
+	<div class="list-box">
+		<div>
+			<p>用户名</p>
+        	<input type="text" name="name" id='name'>
+        </div>
+        <div>
+        	<p>密码</p>
+        	<input type="text" name="password" id='password'>
+        </div>
+        <button id='login'>登录</button>
+	</div>
+</body>
+</html>
+
