@@ -1,3 +1,71 @@
+#header {
+    background-color:black;
+    color:white;
+    text-align:center;
+    padding:5px;
+}
+
+#data {
+    line-height:30px;
+    background-color:#eeeeee;
+    width:70%;
+    float:left;
+}
+
+#section {
+    width:30%;
+    float:left;
+}
+
+#footer {
+    background-color:gray;
+    color:white;
+    clear:both;
+    text-align:center;
+    padding:5px;      
+}
+
+#section .title {
+    position: relative;
+    width: 80%;
+    margin: 10px;
+    background: #eeeeee;
+}
+
+#section div {
+    margin: 10px;
+}
+
+#section ul {
+    border-width: 1px;
+    border-radius: 2px;
+    background: #e0e0e0;
+    width: 80%
+}
+
+#section .footer {
+    clear:both;
+    text-align:center;
+}
+
+#section p {
+    float: left;
+    width: 45%;
+    margin: 2%;
+}
+
+#section li input {
+    float: left;
+    width: 42%;
+    margin: 2%;
+}
+
+#footer input {
+    float: center;
+    width: 35%;
+    margin: 20px;
+}
+
 .list-box{
     position:relative;
     width: 80%;

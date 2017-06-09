@@ -8,6 +8,7 @@
     <link type="text/css" rel="stylesheet" href="css/index.css">
     <script type="text/javascript">
         var nowIndex = 0;
+        var user_dict = {}
         $(function () {
             $.ajax({
                 type: "get",
@@ -21,12 +22,21 @@
                     $('#category option').remove()
                     $('#list ul').remove()
                     $.each( message, function(k,v){
-                        $('#category').append('<option>'+k+'</option>')
-                        $('#list').append('<ul id='+k+'>'+k+'</ul>')
-                        $.each(v, function(val,val2){
-                            $("#"+k).append('<li value='+ k + '><i class="i1"></i><i class="i2"></i><span>'+ val2 +'</span></li>');    
-                            bindClick();
-                        })
+                        if (k == 'dict') {
+                            user_dict = v;
+                            $.each( user_dict, function(k1,v1){
+                                $('#title').append( '<option>'+ k1 +'</option>')
+                            });
+                            $('#title').change();
+                        }
+                        else {
+                            $('#category').append('<option>'+k+'</option>')
+                            $('#list').append('<ul id='+k+'>'+k+'</ul>')
+                            $.each(v, function(val,val2){
+                                $("#"+k).append('<li value='+ k + '><i class="i1"></i><i class="i2"></i><span>'+ val2 +'</span></li>');    
+                                bindClick();
+                            })    
+                        }
                     })
                 },
                 error: function (message) {
@@ -42,6 +52,7 @@
                     alert( "content can't be null!" )
                 }
                 $("#"+category).append('<li><i class="i1"></i><i class="i2"></i><span>'+ content +'</span></li>');
+                extract_dict( content );
                 $('#txt').val('');
                 bindClick();
             });
@@ -50,6 +61,7 @@
                 $(".dv-box").hide();
                 bindClick();
             })
+
             var List = document.getElementById('list');
             var oSpan = List.getElementsByTagName('span');
             $(".dv-box .dv-edit").click(function(){
@@ -59,6 +71,32 @@
                 }
                 $(".dv-box").hide();
             })
+            function extract_dict( sentense ) {
+                var pattern = /.*?\[(.*?)\](.*?)\[\/\]/ig;
+                
+                while ( arr = pattern.exec(sentense) ) {
+                    if ( !user_dict[arr[1]] ) {
+                        $('#title').append( '<option>'+ arr[1] +'</option>')
+                        user_dict[arr[1]] = {'type':'List', 'dict':{}};
+                        user_dict[arr[1]]['dict'][arr[2]] = ''
+                    } else {
+                        user_dict[arr[1]]['dict'][arr[2]] = ''
+                    }
+                    $(".title").change()
+                }
+
+                console.log( user_dict );
+            }
+
+            $("#title").change(function(){ 
+                $('#dict li').remove();
+                var key = $("#title").val();
+                console.log( key );
+                data = user_dict[key]['dict'];
+                for ( var d in data ) {
+                    $('#dict').append('<li><input type="text" value=' + d + '><input type="text" value=' + data[d] + '></li>');
+                }
+            }); 
             $('.list-box ul li button').live('click',function(){
                 var  Id = $(this).attr('id');
                 var newVa = $('#new' + Id).val();
@@ -67,7 +105,7 @@
              $('#create').click(function() {
                 var s = $('#new_category').val()
                 $('#category').append('<option>'+s+'</option>')
-                 $('#list').append('<ul id='+s+'>'+s+'</ul>')
+                $('#list').append('<ul id='+s+'>'+s+'</ul>')
             })
             $('#try').click(function() {
                 var s = $('#predict_test').val();
@@ -97,7 +135,36 @@
                     }
                 });
             });
-
+            $('#dict_add').click(function(){
+                $('#dict').append('<li><input type="text"><input type="text"></li>')
+            });
+            $('#dict_save').click(function(){
+                datas = user_dict[$('#title').val()]['dict'];
+                $('#section ul li').each(function(index,item){
+                    key = $(this).children("input:first").val();
+                    value = $(this).children("input:last").val();
+                    datas[key] = value;
+                })
+            });
+            $('#dict_submit').click( function(){
+                $.ajax({
+                    type: 'post',
+                    url: window.localStorage.host+"dict",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({
+                            appid:window.localStorage.appid,
+                            data:user_dict
+                        }),
+                    dataType: "json",
+                    success: function (message) {
+                        $("#output").val(JSON.stringify(message))
+                        //var data=JSON.parse(message);
+                    },
+                    error: function (message) {
+                       alert("提交数据失败！");
+                    }
+                })
+            })
             $('#train').click(function() {
                  var data={}
                  $(function (){
@@ -139,51 +206,81 @@
     </script>
 </head>
 <body>
-    <div class="list-box">
-        <div >
-            <p>类别</p>
-            <input type="text" id='new_category'>
-            <button id='create'>创建</button>
+    <header id='header'>
+        test
+    </header>
+    <div id='data'>
+        <div class="list-box">
+            <div >
+                <label for='new_category'>类别</label>
+                <input type="text" id='new_category'>
+                <button id='create'>创建</button>
+            </div>
+            <div class="add">
+                <input type="text" value="" id="txt">
+                <select id='category'>
+                </select>
+                <a id="add" href="#">
+                    <img src="images/bt.png">
+                </a>
+            </div>
+            <div class="list">
+                <ul id="list">
+                </ul>
+            </div>
+            <div align="right">
+                <button id="train">train</button>
+            </div>
+            <div class="dv-box">
+                <span>
+                    <img class="icon" src="images/icon3_03.png">
+                </span>
+                <div class="sid">
+                    <div class="dv-edit">
+                        <img id="click" src="images/bianji.png">
+                        编辑
+                    </div>
+                    <div class="dv-item">
+                        <img id="delete" src="images/detle.png">
+                        删除
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="add">
-            <input type="text" value="" id="txt">
-            <select id='category'>
+    </div>
+    <div id='section'>
+        <div>
+            <select class='title' id='title'>
             </select>
-            <a id="add" href="#">
-                <img src="images/bt.png">
-            </a>
+            <div>
+                <label for='type'>类型:</label>
+                <select id='type'>
+                    <option>List</option>
+                    <option>Freeform</option>
+                </select>
+            </div>
+            <div>
+                <p>key</p>
+                <p>value</p>
+                <ul id='dict'>
+                   
+                </ul>
+            </div>
+            <div class='footer'>
+                <button id='dict_add'>增加</button>
+                <button id='dict_save'>保存</button>
+                <button id='dict_submit'>提交</button>
+            </div>
         </div>
-        <div class="list">
-            <ul id="list">
-            </ul>
-        </div>
-        <div align="right">
-            <button id="train">train</button>
-        </div>
+    </div>
+    <div id='footer'>
         <div class="add">
             <input type="text" value="" id="predict_test">
-        </div>
-        <div align="right">
-            <button align='right' id="try">have a try</button>
+            <button id="try">试一试</button>
         </div>
         <div>
             <textarea rows="10" cols="100" id='output'>
             </textarea>
-        </div>
-        <div class="dv-box">
-            <span>
-                <img class="icon" src="images/icon3_03.png">
-            </span>
-            <div class="sid">
-                <div class="dv-edit">
-                    <img id="click" src="images/bianji.png">
-                    编辑
-                </div>
-                <div class="dv-item">
-                    <img id="delete" src="images/detle.png">
-                    删除
-                </div>
-            </div>
         </div>
     </div>
 </body>

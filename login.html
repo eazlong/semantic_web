@@ -8,7 +8,7 @@
     <link type="text/css" rel="stylesheet" href="css/index.css">
     <script type="text/javascript">
     	$(function() {
-    		window.localStorage.host = "http://192.168.27.130:8001/"
+    		window.localStorage.host = "http://119.29.237.55:8001/"
     		$("#login").click(function(){
     			$.post(window.localStorage.host+"login",
     			{
@@ -34,7 +34,7 @@
         </div>
         <div>
         	<p>密码</p>
-        	<input type="text" name="password" id='password'>
+        	<input type="password" name="password" id='password'>
         </div>
         <button id='login'>登录</button>
 	</div>
